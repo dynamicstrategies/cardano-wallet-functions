@@ -3,7 +3,8 @@ import {generateMnemonic} from 'bip39'
 import {randomBytes} from 'randombytes'
 import axios from 'axios';
 
-const WALLET_API_URL = 'https://cnode.dynamicstrategies.io:8050/v2';
+// const WALLET_API_URL = 'https://cnode.dynamicstrategies.io:8050/v2';
+const WALLET_API_URL = 'http://localhost:8010/proxy';
 const MNEMONIC_STRENGTH = 160;
 
 class App extends Component {
@@ -14,60 +15,127 @@ class App extends Component {
       mnemonic: [],
       passphrase: 'z4B8CBTLNjJWZFMQvJ',
       name: 'Beam Wallet',
-      walletId: undefined,
+      walletId: 'f1ea9199479041337bd9db20edcc481cd2fdea68',
     };
 
   }
 
-  createMnemonic = () => {
-    const mnemonicStr = generateMnemonic(MNEMONIC_STRENGTH, randomBytes);
-    const mnemonicArray = mnemonicStr.split(' ')
-    this.setState({mnemonic: mnemonicArray}, () => {
-      this.createWallet()
+  getNetworkSyncState = () => {
+
+    axios({
+      method: 'get',
+      url: '/network/information',
+      baseURL: WALLET_API_URL
+
+    }).then((response) => {
+
+      if (response.status === 200) {
+        console.log(`sync status: ${response.data.sync_progress.status}`)
+      } else {
+        console.log(response)
+      }
+
+    }).catch(function (err) {
+      console.log(err);
     })
+
   }
 
-  createWallet = async () => {
+  createWallet = () => {
+
+    const mnemonicStr = generateMnemonic(MNEMONIC_STRENGTH, randomBytes);
+    const mnemonicArray = mnemonicStr.split(' ')
+    this.setState({mnemonic: mnemonicArray})
 
     let payload = {}
 
     payload.name = this.state.name;
-    payload.mnemonic_sentence = this.state.mnemonic;
+    payload.mnemonic_sentence = mnemonicArray;
     payload.passphrase = this.state.passphrase;
     payload.address_pool_gap = 20;
 
     console.log(payload)
 
+    const req = JSON.stringify(payload);
 
-    // try{
-    //   const raw = await fetch(WALLET_API_URL + '/wallets', {
-    //     method: 'POST', // *GET, POST, PUT, DELETE, etc.
-    //     mode: 'cors', // no-cors, *cors, same-origin
-    //     cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-    //     credentials: 'same-origin', // include, *same-origin, omit
-    //     headers: {
-    //       'Content-Type': 'application/json'
-    //       // 'Content-Type': 'application/x-www-form-urlencoded',
-    //     },
-    //     redirect: 'follow', // manual, *follow, error
-    //     referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    //     body: JSON.stringify(payload) // body data type must match "Content-Type" header
-    //   });
-    //
-    //   // const response = JSON.parse(raw)
-    //   console.log(raw)
-    //
-    // } catch(err) {
-    //   console.log(err)
-    // }
+    console.log(req)
 
+    axios({
+      method: 'post',
+      url: '/wallets',
+      baseURL: WALLET_API_URL,
+      data: req,
+      headers: {'Content-Type': 'application/json'},
+
+    }).then((response) => {
+
+      if (response.status === 201) {
+        console.log(`wallet has been created with id: ${response.data.id}`)
+        this.setState({walletId: response.data.id})
+      } else {
+        console.log(response)
+      }
+
+    }).catch(function (err) {
+      console.log(err);
+    })
 
   }
 
+  getWalletSnapshot = (walletId) => {
+
+    axios({
+      method: 'get',
+      url: `/wallets/${walletId}`,
+      baseURL: WALLET_API_URL
+
+    }).then((response) => {
+
+      console.log(response)
+
+    }).catch(function (err) {
+      console.log(err);
+    })
+
+  }
+
+  getWalletAssets = (walletId) => {
+
+    axios({
+      method: 'get',
+      url: `/wallets/${walletId}/assets`,
+      baseURL: WALLET_API_URL
+
+    }).then((response) => {
+
+      console.log(response)
+
+    }).catch(function (err) {
+      console.log(err);
+    })
+
+  }
+
+  getAccountPublicKey = (walletId) => {
+
+    axios({
+      method: 'get',
+      url: `/wallets/${walletId}/keys`,
+      baseURL: WALLET_API_URL
+
+    }).then((response) => {
+
+      console.log(response)
+
+    }).catch(function (err) {
+      console.log(err);
+    })
+
+  }
 
   componentDidMount() {
 
-    this.createMnemonic()
+    this.getAccountPublicKey(this.state.walletId)
 
   }
 

@@ -99,6 +99,25 @@ class App extends Component {
 
   }
 
+  getWalletsList = () => {
+
+    axios({
+      method: 'get',
+      url: `/wallets`,
+      baseURL: WALLET_API_URL
+
+    }).then((response) => {
+
+      console.log(response)
+
+    }).catch(function (err) {
+      console.log(err);
+    })
+
+  }
+
+
+
   getWalletAssets = (walletId) => {
 
     axios({
@@ -135,7 +154,8 @@ class App extends Component {
 
   componentDidMount() {
 
-    this.getAccountPublicKey(this.state.walletId)
+    // this.getAccountPublicKey(this.state.walletId)
+    this.getWalletsList()
 
   }
 
@@ -147,6 +167,7 @@ class App extends Component {
     return (
 
         <div>
+
 
 
         </div>

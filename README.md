@@ -13,7 +13,7 @@ Common functions for the cardano-wallet backend
 <p>If you are cloning the repo and running in local environment then you are likely
 to get errors related to CORS. To solve it you should run a local proxy server</p>
 
-`lcp --proxyUrl https://cnode.dynamicstrategies.io:8010/v1/graphql`
+`lcp --proxyUrl https://cnode.dynamicstrategies.io:8071/v2`
 
 <p>And then you should point all your graphQL API queries to </p>
 
